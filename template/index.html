@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regression Analysis</title>
+</head>
+<body>
+    <h1>Upload Liver Patient Dataset</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit">Upload</button>
+    </form>
+    
+    {% if plot_path %}
+        <h2>Results</h2>
+        <h3>Linear Regression Metrics</h3>
+        <p>R²: {{ r2_lr }}</p>
+        <p>MSE: {{ mse_lr }}</p>
+        <p>MAE: {{ mae_lr }}</p>
+
+        <h3>Random Forest Regression Metrics</h3>
+        <p>R²: {{ r2_rf }}</p>
+        <p>MSE: {{ mse_rf }}</p>
+        <p>MAE: {{ mae_rf }}</p>
+
+        <h3>Comparison Plot</h3>
+        <img src="{{ plot_path }}" alt="Comparison Plot">
+    {% endif %}
+</body>
+</html>
