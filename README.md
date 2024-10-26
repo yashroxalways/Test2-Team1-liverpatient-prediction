@@ -1,5 +1,6 @@
 -collecting the dataset 
 -create a python file for this and save as .py
+-create a automated selenium python file and save it as .py 
 -add a requiremts.txt and docker file as needed
 -now in cmd build the docker image using docker build -t liverpatient-preiction .
 -now upload this into git hub repository 
