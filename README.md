@@ -1,1 +1,6 @@
-# test2-team1-brain-tumour-prediction-
+-collecting the dataset 
+-create a python file for this and save as .py
+-add a requiremts.txt and docker file as needed
+-now in cmd build the docker image using docker build -t liverpatient-preiction .
+-now upload this into git hub repository 
+-add all this to jenkins and run it
