@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Comparison</title>
+</head>
+<body>
+    <h1>Model Comparison: Linear Regression vs Random Forest</h1>
+
+    <h2>Linear Regression Metrics</h2>
+    <p><strong>R²:</strong> {{ metrics_lr['R²'] }}</p>
+    <p><strong>MSE:</strong> {{ metrics_lr['MSE'] }}</p>
+    <p><strong>MAE:</strong> {{ metrics_lr['MAE'] }}</p>
+
+    <h2>Random Forest Metrics</h2>
+    <p><strong>R²:</strong> {{ metrics_rf['R²'] }}</p>
+    <p><strong>MSE:</strong> {{ metrics_rf['MSE'] }}</p>
+    <p><strong>MAE:</strong> {{ metrics_rf['MAE'] }}</p>
+
+    <h2>Comparison Plot</h2>
+    <img src="{{ plot_url }}" alt="Comparison of Linear Regression and Random Forest" style="width:70%; max-width:600px;"/>
+
+</body>
+</html>

@@ -2,89 +2,92 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from flask import Flask, render_template, send_from_directory
+import os
 
-# Load the dataset
-data = pd.read_csv('/content/Liver Patient Dataset (LPD)_train.csv', encoding='latin1')
-
-# Clean column names (removing leading/trailing spaces)
+# Load and preprocess the dataset
+data = pd.read_csv('Liver Patient Dataset (LPD)_train.csv', encoding='latin1')
 data.columns = data.columns.str.strip()
 
-# Define the target variable (for example, 'Total Bilirubin') and features
+# Define features and target
 X = data.drop(['Total Bilirubin', 'Result', 'Gender of the patient'], axis=1)
 y = data['Total Bilirubin']
 
-# Handle any missing values (if any)
+# Handle missing values
 X = X.fillna(X.mean())
 y = y.fillna(y.mean())
 
-# Split the dataset into training and testing sets
+# Split dataset
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Initialize the models
+# Initialize and train models
 linear_reg = LinearRegression()
 random_forest = RandomForestRegressor(n_estimators=100, random_state=42)
-
-# Train the models
 linear_reg.fit(X_train, y_train)
 random_forest.fit(X_train, y_train)
 
-# Make predictions
+# Predictions and metric calculations
 y_pred_lr = linear_reg.predict(X_test)
 y_pred_rf = random_forest.predict(X_test)
 
-# Calculate metrics (R², MSE, MAE)
-r2_lr = r2_score(y_test, y_pred_lr)
-r2_rf = r2_score(y_test, y_pred_rf)
-mse_lr = mean_squared_error(y_test, y_pred_lr)
-mse_rf = mean_squared_error(y_test, y_pred_rf)
-mae_lr = mean_absolute_error(y_test, y_pred_lr)
-mae_rf = mean_absolute_error(y_test, y_pred_rf)
+# Metrics for Linear Regression
+metrics_lr = {
+    'R²': r2_score(y_test, y_pred_lr),
+    'MSE': mean_squared_error(y_test, y_pred_lr),
+    'MAE': mean_absolute_error(y_test, y_pred_lr)
+}
 
-# Print the metrics for both models
-print(f"Linear Regression - \nR²: {r2_lr:.4f}, \nMSE: {mse_lr:.4f}, \nMAE: {mae_lr:.4f}")
-print()
-print()
-print(f"Random Forest Regression - \nR²: {r2_rf:.4f}, \nMSE: {mse_rf:.4f}, \nMAE: {mae_rf:.4f}")
-print()
-print()
+# Metrics for Random Forest
+metrics_rf = {
+    'R²': r2_score(y_test, y_pred_rf),
+    'MSE': mean_squared_error(y_test, y_pred_rf),
+    'MAE': mean_absolute_error(y_test, y_pred_rf)
+}
 
-# Create a bar plot for comparison of metrics
-metrics = ['R²', 'MSE', 'MAE']
-linear_metrics = [r2_lr, mse_lr, mae_lr]
-random_forest_metrics = [r2_rf, mse_rf, mae_rf]
+# Plotting function to compare metrics
+def create_comparison_plot(metrics_lr, metrics_rf, save_path="static/comparison_plot.png"):
+    metrics = ['R²', 'MSE', 'MAE']
+    linear_metrics = [metrics_lr['R²'], metrics_lr['MSE'], metrics_lr['MAE']]
+    random_forest_metrics = [metrics_rf['R²'], metrics_rf['MSE'], metrics_rf['MAE']]
 
-x = np.arange(len(metrics))  # the label locations
-width = 0.35  # the width of the bars
+    x = np.arange(len(metrics))  # label locations
+    width = 0.35  # width of the bars
 
-fig, ax = plt.subplots(figsize=(8, 5))
+    plt.figure(figsize=(10, 6))
+    plt.bar(x - width/2, linear_metrics, width, label='Linear Regression', color='blue')
+    plt.bar(x + width/2, random_forest_metrics, width, label='Random Forest', color='green')
 
-# Plotting bars for Linear Regression and Random Forest
-rects1 = ax.bar(x - width/2, linear_metrics, width, label='Linear Regression', color='blue')
-rects2 = ax.bar(x + width/2, random_forest_metrics, width, label='Random Forest', color='green')
+    # Add labels and title
+    plt.xlabel('Metrics')
+    plt.title('Comparison of Linear Regression vs Random Forest')
+    plt.xticks(x, metrics)
+    plt.legend()
 
-# Add some text for labels, title and custom x-axis tick labels, etc.
-ax.set_xlabel('Metrics')
-ax.set_title('Comparison of Linear Regression vs Random Forest Regression')
-ax.set_xticks(x)
-ax.set_xticklabels(metrics)
-ax.legend()
+    # Save the plot
+    plt.savefig(save_path)
+    plt.close()
 
-# Display the values on top of the bars
-def autolabel(rects):
-    """Attach a text label above each bar in *rects*, displaying its height."""
-    for rect in rects:
-        height = rect.get_height()
-        ax.annotate(f'{height:.2f}',
-                    xy=(rect.get_x() + rect.get_width() / 2, height),
-                    xytext=(0, 3),  # 3 points vertical offset
-                    textcoords="offset points",
-                    ha='center', va='bottom')
+# Initialize Flask app
+app = Flask(__name__)
 
-autolabel(rects1)
-autolabel(rects2)
+# Route to serve the plot image
+@app.route('/static/<path:filename>')
+def static_file(filename):
+    return send_from_directory('static', filename)
 
-plt.tight_layout()
-plt.show()
+@app.route('/')
+def index():
+    # Generate the comparison plot and save it as an image
+    plot_path = "static/comparison_plot.png"
+    create_comparison_plot(metrics_lr, metrics_rf, save_path=plot_path)
+
+    # Pass metrics and image path to the template
+    return render_template('index.html', metrics_lr=metrics_lr, metrics_rf=metrics_rf, plot_url=plot_path)
+
+if __name__ == '__main__':
+    if not os.path.exists('static'):
+        os.makedirs('static')
+    app.run(debug=True)
